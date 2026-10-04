@@ -196,8 +196,8 @@ input { -webkit-user-select: text; user-select: text; }
   </section>
 
   <footer class="footer">
-    <div>© 2026 ES Network. ESN App Store concept build.</div>
-    <div>Premium UI • Mobile ready • No framework required</div>
+    <div>© 2026 ES Network. ESN native app suite.</div>
+    <div>8 working built-in apps • Android + iOS</div>
   </footer>
 </main>
 
@@ -238,10 +238,16 @@ function render(){
       </div>
     </article>`).join(''):`<div class="empty">No apps found. Try another search.</div>`;
 }
+function launchApp(id){ location.href='apps/'+id+'/index.html'; }
 function toggleInstall(id,btn){
-  if(installed.has(id)){openApp(id);return}
+  if(installed.has(id)){launchApp(id);return}
   installed.add(id); localStorage.setItem('esn-installed',JSON.stringify([...installed])); render();
   btn && (btn.textContent='OPEN');
+  setTimeout(()=>launchApp(id),120);
+}
+function installAndLaunch(id){
+  if(!installed.has(id)){installed.add(id);localStorage.setItem('esn-installed',JSON.stringify([...installed]));}
+  launchApp(id);
 }
 function openApp(id){
   const a=APPS.find(x=>x.id===id); if(!a)return;
@@ -260,7 +266,7 @@ function openApp(id){
       <div class="infoBox"><span>Delivery</span><b>${a.size}</b></div>
     </div>
     <div class="modalActions">
-      <button class="primary" onclick="toggleInstall('${a.id}');openApp('${a.id}')">${is?'Open app':'Get app'}</button>
+      <button class="primary" onclick="${is?`launchApp('${a.id}')`:`installAndLaunch('${a.id}')`}">${is?'Open app':'Get app'}</button>
       <button class="secondary" onclick="closeModal()">Close</button>
     </div>`;
   document.getElementById('modalBackdrop').classList.add('show');
