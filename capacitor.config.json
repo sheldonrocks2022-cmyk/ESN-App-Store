@@ -1,0 +1,14 @@
+{
+  "appId": "com.esnetwork.appstore",
+  "appName": "ESN App Store",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false
+  },
+  "ios": {
+    "contentInset": "automatic"
+  }
+}

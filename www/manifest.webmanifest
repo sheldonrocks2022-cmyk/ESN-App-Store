@@ -1,0 +1,9 @@
+{
+  "name": "ESN App Store",
+  "short_name": "ESN Store",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#080a11",
+  "theme_color": "#090b13",
+  "description": "The native ES Network app marketplace."
+}

@@ -1,0 +1,71 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'www/**'
+      - 'assets/**'
+      - 'package.json'
+      - 'capacitor.config.json'
+      - '.github/workflows/android.yml'
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android API 36
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Create native Android project
+        run: npx cap add android
+
+      - name: Sync web app
+        run: npx cap sync android
+
+      - name: Generate ESN Android icons and splash
+        run: >
+          npx @capacitor/assets generate --android
+          --iconBackgroundColor '#090B13'
+          --iconBackgroundColorDark '#090B13'
+          --splashBackgroundColor '#080A11'
+          --splashBackgroundColorDark '#080A11'
+
+      - name: Build APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Rename APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk ESN-App-Store-Android.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ESN-App-Store-Android
+          path: ESN-App-Store-Android.apk

@@ -1,0 +1,61 @@
+name: Build iOS App
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'www/**'
+      - 'assets/**'
+      - 'package.json'
+      - 'capacitor.config.json'
+      - '.github/workflows/ios.yml'
+
+jobs:
+  build-ios:
+    runs-on: macos-26
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Create native iOS project
+        run: npx cap add ios
+
+      - name: Sync web app
+        run: npx cap sync ios
+
+      - name: Generate ESN iOS icons and splash
+        run: >
+          npx @capacitor/assets generate --ios
+          --iconBackgroundColor '#090B13'
+          --iconBackgroundColorDark '#090B13'
+          --splashBackgroundColor '#080A11'
+          --splashBackgroundColorDark '#080A11'
+
+      - name: Build iOS Simulator app
+        run: |
+          xcodebuild             -project ios/App/App.xcodeproj             -scheme App             -configuration Debug             -sdk iphonesimulator             -derivedDataPath build             CODE_SIGNING_ALLOWED=NO             build
+
+      - name: Package iOS Simulator app
+        run: |
+          ditto -c -k --sequesterRsrc --keepParent             build/Build/Products/Debug-iphonesimulator/App.app             ESN-App-Store-iOS-Simulator.zip
+          ditto -c -k --sequesterRsrc --keepParent ios ESN-App-Store-Xcode-Project.zip
+
+      - name: Upload iOS builds
+        uses: actions/upload-artifact@v4
+        with:
+          name: ESN-App-Store-iOS
+          path: |
+            ESN-App-Store-iOS-Simulator.zip
+            ESN-App-Store-Xcode-Project.zip
